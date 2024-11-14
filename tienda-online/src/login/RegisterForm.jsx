@@ -5,29 +5,43 @@ import { useNavigate } from "react-router-dom";
 function RegisterForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [profilePicture, setProfilePicture] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
 
+    const formData = new FormData();
+    formData.append("username", username);
+    formData.append("password", password);
+    formData.append("email", email);
+    formData.append("first_name", firstName);
+    formData.append("last_name", lastName);
+    if (profilePicture) {
+      formData.append("profile_picture", profilePicture);
+    }
+
     try {
-      const response = await fetch("http://localhost:5000/users", {
+      const response = await fetch("http://localhost:8000/api/register/", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
+        body: formData,
       });
 
       if (response.ok) {
-        setOpenSnackbar(true); // Mostrar el snackbar
-        setTimeout(() => navigate("/"), 2000); // Redirigir al home después de 2 segundos
+        setOpenSnackbar(true);
+        setTimeout(() => navigate("/"), 2000);
       } else {
-        console.error("Error en el registro");
+        const errorData = await response.json();
+        setError(errorData.detail || "Error en el registro");
       }
     } catch (error) {
-      console.error("Error al conectarse al servidor:", error);
+      setError("Error al conectarse al servidor");
+      console.error("Error:", error);
     }
   };
 
@@ -57,9 +71,43 @@ function RegisterForm() {
         onChange={(e) => setPassword(e.target.value)}
         required
       />
+      <TextField
+        label="Email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+      <TextField
+        label="Nombre"
+        value={firstName}
+        onChange={(e) => setFirstName(e.target.value)}
+        required
+      />
+      <TextField
+        label="Apellido"
+        value={lastName}
+        onChange={(e) => setLastName(e.target.value)}
+        required
+      />
+      <Button variant="contained" component="label" color="primary">
+        Subir Foto de Perfil
+        <input
+          type="file"
+          hidden
+          accept="image/*"
+          onChange={(e) => setProfilePicture(e.target.files[0])}
+        />
+      </Button>
       <Button variant="contained" color="primary" type="submit">
         Registrarse
       </Button>
+
+      {error && (
+        <Alert severity="error" sx={{ width: "100%" }}>
+          {error}
+        </Alert>
+      )}
 
       <Snackbar
         open={openSnackbar}

@@ -4,20 +4,23 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 function LoginForm() {
-  const { login } = useAuth();
+  const { login } = useAuth(); // El login debe enviar username y password al backend
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate(); // Hook para redirigir al Home
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    // Intentar iniciar sesión con username y password
     const result = await login(username, password);
 
+    // Si el login es exitoso, redirige al home
     if (result.success) {
-      navigate("/"); // Redirigir a Home si el login es exitoso
+      navigate("/"); // Redirigir al Home
     } else {
-      setError(result.message); // Mostrar mensaje de error si las credenciales son incorrectas
+      setError(result.message); // Muestra el mensaje de error si el login falla
     }
   };
 
